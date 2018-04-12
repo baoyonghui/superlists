@@ -5,14 +5,16 @@ from django.http import HttpRequest
 from django.template.loader import render_to_string
 import re
 from lists.models import Item, List
+from lists.forms import ItemForm
 
 class HomePageTest(TestCase):
+    maxDiff = None
 
     @staticmethod
     def remove_csrf(html_code):
         csrf_regex = r'<input[^>]+csrfmiddlewaretoken[^>]+>'
         return re.sub(csrf_regex, '', html_code)
-
+    '''
     def test_root_url_resolves_to_home_page_view(self):
         found = resolve('/')
         self.assertEqual(found.func, home_page)
@@ -23,11 +25,19 @@ class HomePageTest(TestCase):
         
         #通过请求返回的文本与通过渲染返回的文本，其csrf_token是不同的
         #所以需要去掉csrf_token在进行比较 
-        expected_html = render_to_string('home.html', request=request)
+        expected_html = render_to_string('home.html', {'form': ItemForm()})
         expected_html = self.remove_csrf(expected_html)
         response_html = response.content.decode()
         response_html = self.remove_csrf(response_html)
-        self.assertEqual(response_html, expected_html)
+        self.assertMultiLineEqual(response_html, expected_html)
+    '''
+    def test_home_page_renders_home_template(self):
+        response = self.client.get('/')
+        self.assertTemplateUsed(response, 'home.html')
+
+    def test_home_page_uses_item_form(self):
+        response = self.client.get('/')
+        self.assertIsInstance(response.context['form'], ItemForm)
 
 class ListViewTest(TestCase):
     def test_saving_a_POST_request(self):
